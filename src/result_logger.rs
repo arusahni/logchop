@@ -31,6 +31,17 @@ macro_rules! result_format_trait_group {
     };
 }
 
+/// Augment [`Result`] types with log methods that can print debug representations of wrapped
+/// values.
+///
+/// This trait defines methods prefixed by the log level, as well as a general one that accepts a
+/// log level parameter.
+///
+/// * `<log_level>(message)` appends the option to the message if `Ok` or `Err`
+/// * `<log_level>_ok(message)` appends the wrapped value to the message if `Ok`
+/// * `<log_level>_err(message)` appends the wrapped value to the message if `Err`
+///
+/// [`Result`]: https://doc.rust-lang.org/std/result/enum.Result.html
 pub trait ResultLogger<T, E> {
     fn log(self, level: Level, message: &str) -> Result<T, E>;
     fn log_ok(self, level: Level, message: &str) -> Result<T, E>;
@@ -43,6 +54,19 @@ pub trait ResultLogger<T, E> {
     result_log_trait_group!(error);
 }
 
+/// Augment [`Result`] types with log methods that can print abitrary representations of wrapped values.
+///
+/// The callsite is responsible for defining the format strategy. The closure is only evaluated
+/// when necessary.
+///
+/// This trait defines methods prefixed by the log level, as well as a general one that accepts a
+/// log level parameter.
+///
+/// * `<log_level>_format(FnOnce)` prints the return value of the closure if `Ok` or `Err`
+/// * `<log_level>_format_ok(FnOnce)` prints the return value of the closure if `Ok`
+/// * `<log_level>_format_err(FnOnce)` prints the return value of the closure if `Err`
+///
+/// [`Result`]: https://doc.rust-lang.org/std/result/enum.Result.html
 pub trait ResultLogFormatter<T, E> {
     fn log_format<F>(self, level: Level, f: F) -> Result<T, E>
     where

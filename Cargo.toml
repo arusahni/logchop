@@ -3,10 +3,13 @@ name = "logchop"
 version = "0.1.0"
 authors = ["Aru Sahni <aru@arusahni.net>"]
 license = "Apache-2.0"
-license-file = "LICENSE.txt"
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "Log your `Result` and `Option` chains with inline methods."
+homepage = "https://github.com/arusahni/logchop"
+repository = "https://github.com/arusahni/logchop"
+readme = "README.md"
+keywords = ["log", "logging", "chaining", "trait"]
+categories = ["development-tools::debugging", "rust-patterns"]
 
 [dependencies]
 log = "0.4"

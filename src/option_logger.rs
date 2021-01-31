@@ -31,6 +31,17 @@ macro_rules! option_format_trait_group {
     };
 }
 
+/// Augment [`Option`] types with log methods that can print debug representations of wrapped
+/// values.
+///
+/// This trait defines methods prefixed by the log level, as well as a general one that accepts a
+/// log level parameter.
+///
+/// * `<log_level>(message)` appends the option to the message if `Some`, or prints the message if `None`
+/// * `<log_level>_some(message)` appends the wrapped value to the message if `Some`
+/// * `<log_level>_none()` outputs the message if `None`
+///
+/// [`Option`]: https://doc.rust-lang.org/std/option/enum.Option.html
 pub trait OptionLogger<T> {
     fn log(self, level: Level, message: &str) -> Option<T>;
     fn log_some(self, level: Level, message: &str) -> Option<T>;
@@ -43,6 +54,19 @@ pub trait OptionLogger<T> {
     option_log_trait_group!(error);
 }
 
+/// Augment [`Option`] types with log methods that can print abitrary representations of wrapped values.
+///
+/// The callsite is responsible for defining the format strategy. The closure is only evaluated
+/// when necessary.
+///
+/// This trait defines methods prefixed by the log level, as well as a general one that accepts a
+/// log level parameter.
+///
+/// * `<log_level>_format(FnOnce)` prints the return value of the closure if `Some` or `None`
+/// * `<log_level>_format_some(FnOnce)` prints the return value of the closure if `Some`
+/// * `<log_level>_format_none(FnOnce)` prints the return value of the closure if `None`
+///
+/// [`Option`]: https://doc.rust-lang.org/std/option/enum.Option.html
 pub trait OptionLogFormatter<T> {
     fn log_format<F>(self, level: Level, f: F) -> Option<T>
     where
