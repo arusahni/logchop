@@ -1,3 +1,5 @@
+[![Latest version](https://img.shields.io/crates/v/logchop.svg?style=flat)](https://crates.io/crates/logchop)
+
 # LogChop
 
 _It's better than bad, it's good!_
@@ -45,6 +47,10 @@ parse_id_string(id_str)
 ```
 
 Say goodbye to unnecessary blocks!
+
+## Documentation
+
+[Available on Docs.rs](https://docs.rs/logchop/).
 
 ## Installation and Usage
 

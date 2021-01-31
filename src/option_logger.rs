@@ -4,10 +4,14 @@ use paste::paste;
 macro_rules! option_log_trait_group {
     ($level:ident) => {
         paste! {
+            /// Output a $level log with the given message. This will optionally append the wrapped
+            /// value if `Some`.
             fn $level(self, message: &str) -> Option<T>;
 
+            /// Output a $level log with the given message if `Some`, appending the wrapped value.
             fn [<$level _some>](self, message: &str) -> Option<T>;
 
+            /// Output a $level log with the given message if `None`.
             fn [<$level _none>](self, message: &str) -> Option<T>;
         }
     };
@@ -16,14 +20,17 @@ macro_rules! option_log_trait_group {
 macro_rules! option_format_trait_group {
     ($level:ident) => {
         paste! {
+            /// Output a $level log with the return value of the provided closure.
             fn [<$level _format>]<F>(self, f: F) -> Option<T>
             where
                 F: FnOnce(&Option<T>) -> String;
 
+            /// Output a $level log with the return value of the provided closure if `Some`.
             fn [<$level _some_format>]<F>(self, f: F) -> Option<T>
             where
                 F: FnOnce(&T) -> String;
 
+            /// Output a $level log with the return value of the provided closure if `None`.
             fn [<$level _none_format>]<F>(self, f: F) -> Option<T>
             where
                 F: FnOnce() -> String;
@@ -43,8 +50,14 @@ macro_rules! option_format_trait_group {
 ///
 /// [`Option`]: https://doc.rust-lang.org/std/option/enum.Option.html
 pub trait OptionLogger<T> {
+    /// Output a log message of the provided severity if `Some` or `None`. If `Some`, the wrapped
+    /// value will be appended.
     fn log(self, level: Level, message: &str) -> Option<T>;
+
+    /// Output a log message of the provided severity if `Some`, with the wrapped value appended.
     fn log_some(self, level: Level, message: &str) -> Option<T>;
+
+    /// Output a log message of the provided severity if `None`.
     fn log_none(self, level: Level, message: &str) -> Option<T>;
 
     option_log_trait_group!(trace);
@@ -68,14 +81,20 @@ pub trait OptionLogger<T> {
 ///
 /// [`Option`]: https://doc.rust-lang.org/std/option/enum.Option.html
 pub trait OptionLogFormatter<T> {
+    /// Output a log message of the provided severity if `Some` or `None`. The message is
+    /// determined by the return value of the supplied closure.
     fn log_format<F>(self, level: Level, f: F) -> Option<T>
     where
         F: FnOnce(&Option<T>) -> String;
 
+    /// Output a log message of the provided severity if `Some`. The message is determined by the
+    /// return value of the supplied closure.
     fn log_some_format<F>(self, level: Level, f: F) -> Option<T>
     where
         F: FnOnce(&T) -> String;
 
+    /// Output a log message of the provided severity if `None`. The message is determined by the
+    /// return value of the supplied closure.
     fn log_none_format<F>(self, level: Level, f: F) -> Option<T>
     where
         F: FnOnce() -> String;

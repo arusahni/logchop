@@ -4,10 +4,13 @@ use paste::paste;
 macro_rules! result_log_trait_group {
     ($level:ident) => {
         paste! {
+            /// Output a $level log with the given message. This will append the wrapped value.
             fn $level(self, message: &str) -> Result<T, E>;
 
+            /// Output a $level log with the given message if `Ok`, appending the wrapped value.
             fn [<$level _ok>](self, message: &str) -> Result<T, E>;
 
+            /// Output a $level log with the given message if `Err`, appending the wrapped value.
             fn [<$level _err>](self, message: &str) -> Result<T, E>;
         }
     };
@@ -16,14 +19,17 @@ macro_rules! result_log_trait_group {
 macro_rules! result_format_trait_group {
     ($level:ident) => {
         paste! {
+            /// Output a $level log with the return value of the provided closure.
             fn [<$level _format>]<F>(self, f: F) -> Result<T, E>
             where
                 F: FnOnce(&Result<T, E>) -> String;
 
+            /// Output a $level log with the return value of the provided closure if `Ok`.
             fn [<$level _ok_format>]<F>(self, f: F) -> Result<T, E>
             where
                 F: FnOnce(&T) -> String;
 
+            /// Output a $level log with the return value of the provided closure if `Err`.
             fn [<$level _err_format>]<F>(self, f: F) -> Result<T, E>
             where
                 F: FnOnce(&E) -> String;
@@ -43,8 +49,14 @@ macro_rules! result_format_trait_group {
 ///
 /// [`Result`]: https://doc.rust-lang.org/std/result/enum.Result.html
 pub trait ResultLogger<T, E> {
+    /// Output a log message of the provided severity if `Ok` or `Err`. The wrapped value will be
+    /// appended.
     fn log(self, level: Level, message: &str) -> Result<T, E>;
+
+    /// Output a log message of the provided severity if `Ok`. The wrapped value will be appended.
     fn log_ok(self, level: Level, message: &str) -> Result<T, E>;
+
+    /// Output a log message of the provided severity if `Err`. The wrapped value will be appended.
     fn log_err(self, level: Level, message: &str) -> Result<T, E>;
 
     result_log_trait_group!(trace);
@@ -68,12 +80,21 @@ pub trait ResultLogger<T, E> {
 ///
 /// [`Result`]: https://doc.rust-lang.org/std/result/enum.Result.html
 pub trait ResultLogFormatter<T, E> {
+    /// Output a log message of the provided severity if `Ok` or `Err`. The message is
+    /// determined by the return value of the supplied closure.
     fn log_format<F>(self, level: Level, f: F) -> Result<T, E>
     where
         F: FnOnce(&Result<T, E>) -> String;
+
+
+    /// Output a log message of the provided severity if `Ok`. The message is determined by the
+    /// return value of the supplied closure.
     fn log_ok_format<F>(self, level: Level, f: F) -> Result<T, E>
     where
         F: FnOnce(&T) -> String;
+
+    /// Output a log message of the provided severity if `Err`. The message is determined by the
+    /// return value of the supplied closure.
     fn log_err_format<F>(self, level: Level, f: F) -> Result<T, E>
     where
         F: FnOnce(&E) -> String;
