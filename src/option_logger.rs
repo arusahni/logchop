@@ -2,44 +2,64 @@ use log::{log, Level};
 use paste::paste;
 
 macro_rules! option_log_trait_group {
-    ($level:ident) => {
+    ($level:ident, $level_name:expr) => {
         paste! {
-            /// Output a $level log with the given message. This will optionally append the wrapped
-            /// value if `Some`.
+            #[doc = "Output a "]
+            #[doc = $level_name]
+            #[doc = " log with the given message. This will optionally append the wrapped value if `Some`."]
             fn $level(self, message: &str) -> Option<T>;
 
-            /// Output a $level log with the given message if `Some`, appending the wrapped value.
+            #[doc = "Output a "]
+            #[doc = $level_name]
+            #[doc = " log with the given message if `Some`, appending the wrapped value."]
             fn [<$level _some>](self, message: &str) -> Option<T>;
 
-            /// Output a $level log with the given message if `None`.
+            #[doc = "Output a "]
+            #[doc = $level_name]
+            #[doc = " log with the given message if `None`."]
             fn [<$level _none>](self, message: &str) -> Option<T>;
         }
+    };
+
+    ($level:tt) => {
+        option_log_trait_group!($level, stringify!($level));
     };
 }
 
 macro_rules! option_format_trait_group {
-    ($level:ident) => {
+    ($level:ident, $level_name:expr) => {
         paste! {
-            /// Output a $level log with the return value of the provided closure.
+            #[doc = "Output a "]
+            #[doc = $level_name]
+            #[doc = " log with the return value of the provided closure."]
             fn [<$level _format>]<F>(self, f: F) -> Option<T>
             where
                 F: FnOnce(&Option<T>) -> String;
 
-            /// Output a $level log with the return value of the provided closure if `Some`.
+            #[doc = "Output a "]
+            #[doc = $level_name]
+            #[doc = " log with the return value of the provided closure if `Some`."]
             fn [<$level _some_format>]<F>(self, f: F) -> Option<T>
             where
                 F: FnOnce(&T) -> String;
 
-            /// Output a $level log with the return value of the provided closure if `None`.
+            #[doc = "Output a "]
+            #[doc = $level_name]
+            #[doc = " log with the return value of the provided closure if `None`."]
             fn [<$level _none_format>]<F>(self, f: F) -> Option<T>
             where
                 F: FnOnce() -> String;
         }
     };
+
+    ($level:tt) => {
+        option_format_trait_group!($level, stringify!($level));
+    };
 }
 
-/// Augment [`Option`] types with log methods that can print debug representations of wrapped
-/// values.
+/// Augment [`Option`] types with log methods that can print `Debug` representations of wrapped
+/// values. If the type being logged does not implement `Debug`, use [`OptionLogFormatter`]
+/// instead.
 ///
 /// This trait defines methods prefixed by the log level, as well as a general one that accepts a
 /// log level parameter.
@@ -49,6 +69,7 @@ macro_rules! option_format_trait_group {
 /// * `<log_level>_none()` outputs the message if `None`
 ///
 /// [`Option`]: https://doc.rust-lang.org/std/option/enum.Option.html
+/// [`OptionLogFormatter`]: crate::option_logger::OptionLogFormatter
 pub trait OptionLogger<T> {
     /// Output a log message of the provided severity if `Some` or `None`. If `Some`, the wrapped
     /// value will be appended.
@@ -67,7 +88,9 @@ pub trait OptionLogger<T> {
     option_log_trait_group!(error);
 }
 
-/// Augment [`Option`] types with log methods that can print abitrary representations of wrapped values.
+/// Augment [`Option`] types with log methods that can print abitrary representations of wrapped
+/// values. If the type being wrapped implements `Debug`, you may be able to use [`OptionLogger`]
+/// instead.
 ///
 /// The callsite is responsible for defining the format strategy. The closure is only evaluated
 /// when necessary.
@@ -80,6 +103,7 @@ pub trait OptionLogger<T> {
 /// * `<log_level>_format_none(FnOnce)` prints the return value of the closure if `None`
 ///
 /// [`Option`]: https://doc.rust-lang.org/std/option/enum.Option.html
+/// [`OptionLogger`]: crate::option_logger::OptionLogger
 pub trait OptionLogFormatter<T> {
     /// Output a log message of the provided severity if `Some` or `None`. The message is
     /// determined by the return value of the supplied closure.

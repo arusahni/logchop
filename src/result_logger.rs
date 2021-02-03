@@ -2,43 +2,64 @@ use log::{log, Level};
 use paste::paste;
 
 macro_rules! result_log_trait_group {
-    ($level:ident) => {
+    ($level:ident, $level_name:expr) => {
         paste! {
-            /// Output a $level log with the given message. This will append the wrapped value.
+            #[doc = "Output a "]
+            #[doc = $level_name]
+            #[doc = " log with the given message. This will append the wrapped value."]
             fn $level(self, message: &str) -> Result<T, E>;
 
-            /// Output a $level log with the given message if `Ok`, appending the wrapped value.
+            #[doc = "Output a "]
+            #[doc = $level_name]
+            #[doc = " log with the given message if `Ok`, appending the wrapped value."]
             fn [<$level _ok>](self, message: &str) -> Result<T, E>;
 
-            /// Output a $level log with the given message if `Err`, appending the wrapped value.
+            #[doc = "Output a "]
+            #[doc = $level_name]
+            #[doc = " log with the given message if `Err`, appending the wrapped value."]
             fn [<$level _err>](self, message: &str) -> Result<T, E>;
         }
+    };
+
+    ($level:tt) => {
+        result_log_trait_group!($level, stringify!($level));
     };
 }
 
 macro_rules! result_format_trait_group {
-    ($level:ident) => {
+    ($level:ident, $level_name:expr) => {
         paste! {
-            /// Output a $level log with the return value of the provided closure.
+            #[doc = "Output a "]
+            #[doc = $level_name]
+            #[doc = " log with the return value of the provided closure."]
             fn [<$level _format>]<F>(self, f: F) -> Result<T, E>
             where
                 F: FnOnce(&Result<T, E>) -> String;
 
-            /// Output a $level log with the return value of the provided closure if `Ok`.
+            #[doc = "Output a "]
+            #[doc = $level_name]
+            #[doc = " log with the return value of the provided closure if `Ok`."]
             fn [<$level _ok_format>]<F>(self, f: F) -> Result<T, E>
             where
                 F: FnOnce(&T) -> String;
 
-            /// Output a $level log with the return value of the provided closure if `Err`.
+            #[doc = "Output a "]
+            #[doc = $level_name]
+            #[doc = " log with the return value of the provided closure if `Err`."]
             fn [<$level _err_format>]<F>(self, f: F) -> Result<T, E>
             where
                 F: FnOnce(&E) -> String;
         }
     };
+
+    ($level:tt) => {
+        result_format_trait_group!($level, stringify!($level));
+    };
 }
 
 /// Augment [`Result`] types with log methods that can print debug representations of wrapped
-/// values.
+/// values. If the wrapped `Ok` or `Err` types do not implement `Debug`, use [`ResultLogFormatter`]
+/// instead.
 ///
 /// This trait defines methods prefixed by the log level, as well as a general one that accepts a
 /// log level parameter.
@@ -48,6 +69,7 @@ macro_rules! result_format_trait_group {
 /// * `<log_level>_err(message)` appends the wrapped value to the message if `Err`
 ///
 /// [`Result`]: https://doc.rust-lang.org/std/result/enum.Result.html
+/// [`ResultLogFormatter`]: crate::result_logger::ResultLogFormatter
 pub trait ResultLogger<T, E> {
     /// Output a log message of the provided severity if `Ok` or `Err`. The wrapped value will be
     /// appended.
@@ -66,7 +88,9 @@ pub trait ResultLogger<T, E> {
     result_log_trait_group!(error);
 }
 
-/// Augment [`Result`] types with log methods that can print abitrary representations of wrapped values.
+/// Augment [`Result`] types with log methods that can print abitrary representations of wrapped
+/// values. If the type being logged implements `Debug`, you may be able to use [`ResultLogger`]
+/// instead.
 ///
 /// The callsite is responsible for defining the format strategy. The closure is only evaluated
 /// when necessary.
@@ -79,13 +103,13 @@ pub trait ResultLogger<T, E> {
 /// * `<log_level>_format_err(FnOnce)` prints the return value of the closure if `Err`
 ///
 /// [`Result`]: https://doc.rust-lang.org/std/result/enum.Result.html
+/// [`ResultLogger`]: crate::result_logger::ResultLogger
 pub trait ResultLogFormatter<T, E> {
     /// Output a log message of the provided severity if `Ok` or `Err`. The message is
     /// determined by the return value of the supplied closure.
     fn log_format<F>(self, level: Level, f: F) -> Result<T, E>
     where
         F: FnOnce(&Result<T, E>) -> String;
-
 
     /// Output a log message of the provided severity if `Ok`. The message is determined by the
     /// return value of the supplied closure.

@@ -1,5 +1,5 @@
 #![warn(missing_docs)]
-#![crate_name="logchop"]
+#![crate_name = "logchop"]
 
 //! Log your `Result` and `Option` chains with inline methods.
 //!
