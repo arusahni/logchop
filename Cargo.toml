@@ -1,6 +1,6 @@
 [package]
 name = "logchop"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Aru Sahni <aru@arusahni.net>"]
 license = "Apache-2.0"
 edition = "2018"
